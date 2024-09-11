@@ -1,0 +1,22 @@
+/* App.css */
+.container {
+    margin-top: 80px; /* Adjust for fixed navbar */
+  }
+  
+  .recipes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .category {
+    margin-bottom: 8px;
+  }
+  .searchbar-container {
+    margin-top: 10000vh; /* This pushes the search bar down by the height of the viewport */
+  }
+    
