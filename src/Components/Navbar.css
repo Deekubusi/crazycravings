@@ -1,0 +1,48 @@
+/* Navbar.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+CU:wght@100..400&display=swap');
+
+/* Custom Font Style */
+.playwrite-cu {
+  font-family: "Playwrite CU", cursive;
+}
+
+/* Offcanvas Custom Styles */
+.offcanvas-custom {
+  background-color: #ffffff; /* White background */
+  color: #000000; /* Black text color for contrast */
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid #ddd; /* Light border for separation */
+}
+
+.btn-custom {
+  background-color: #ff5722; /* Orange background for button */
+  color: #fff; /* White text color */
+  border: none; /* Remove border */
+}
+
+.btn-custom:hover {
+  background-color: #e64a19; /* Darker orange for hover effect */
+}
+
+/* Star Ratings */
+.star {
+  color: gold; /* Golden color for stars */
+  font-size: 1.2rem; /* Adjust star size */
+}
+
+/* Adjustments for selected filters display */
+.selected-filters {
+  background-color: #f0f0f0; /* Light gray background */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd; /* Light border for visual separation */
+}
+
+/* Crazy Cravings Styling */
+.navbar-brand {
+  font-family: "Playwrite CU", cursive;
+  font-weight: 400; /* Adjust weight as needed */
+}
