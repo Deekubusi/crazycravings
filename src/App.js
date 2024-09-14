@@ -1,24 +1,27 @@
-// App.js
-import React, { useState, useEffect } from 'react';
-import Navbar from './Components/Navbar';
-import SearchBar from './Components/SearchBar';
-import RecipeCard from './Components/RecipeCard';
-import './App.css'; // Assuming you have some CSS for styling
+import React, { useState, useEffect } from "react";
+import Navbar from "./Components/Navbar";
+import SearchBar from "./Components/SearchBar";
+import RecipeCard from "./Components/RecipeCard";
+import RecipeDetail from './Components/RecipeDetail'; 
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-const searchApi = "https://www.themealdb.com/api/json/v1/1/search.php?s=)";
+import "./App.css"; // Assuming you have some CSS for styling
+
+const backend = "http://13.60.15.198:8000";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
-  const [query, setQuery] = useState("");  
+  const [query, setQuery] = useState("");
   const [recipes, setRecipes] = useState([]);
 
   // Fetch recipes based on the search query
   const searchRecipes = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(searchApi + query);
-      const data = await res.json();
-      setRecipes(data.meals || []); // Handle null response
+      const res = await fetch(`${backend}/toprated`);
+      const resData = await res.json();
+      setRecipes(resData.data || []); // Handle null response
+      console.log(resData.data);
     } catch (error) {
       console.error("Error fetching recipes:", error);
       setRecipes([]);
@@ -27,36 +30,72 @@ function App() {
     }
   };
 
+  const updateRecipesWithFilters = (filteredRecipes) => {
+    setRecipes(filteredRecipes);
+    console.dir("filters : "+filteredRecipes)
+  };
+
   useEffect(() => {
     searchRecipes();
   }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    searchRecipes();
+    // searchRecipes();
+    searchRecipesByKeyword()
+  };
+
+  const searchRecipesByKeyword = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${backend}/search?keyword=${query}`);
+      const resData = await res.json();
+      setRecipes(resData.data || []); // Handle null response
+      console.log(resData.data);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+      setRecipes([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div>
-      <Navbar name="Crazy Cravings" />
-      <div className="container mt-5">
-        <SearchBar
-          isLoading={isLoading}
-          query={query}
-          setQuery={setQuery}
-          handleSubmit={handleSubmit}
-        />
-        <div className="recipes mt-4">
-          {recipes.length > 0 ? (
-            recipes.map((recipe) => (
-              <RecipeCard key={recipe.idMeal} recipe={recipe} />
-            ))
-          ) : (
-            <p>No Results.</p>
-          )}
+    <Router>
+      <div>
+        {/* Navbar and SearchBar are always visible */}
+        {/* <Navbar name="Crazy Cravings" /> */}
+        <Navbar onApplyFilters={updateRecipesWithFilters} />
+        <div className="container mt-5">
+          <SearchBar
+            isLoading={isLoading}
+            query={query}
+            setQuery={setQuery}
+            handleSubmit={handleSubmit}
+          />
+
+          {/* Render Recipe Cards only on the homepage ("/") */}
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <div className="recipes mt-4">
+                  {recipes.length > 0 ? (
+                    recipes.map((recipe) => (
+                      <RecipeCard key={recipe.id} recipe={recipe} />
+                    ))
+                  ) : (
+                    <p>No Results.</p>
+                  )}
+                </div>
+              }
+            />
+            {/* Recipe Detail Page */}
+            <Route path="/recipe/:id" element={<RecipeDetail />} />
+          </Routes>
         </div>
       </div>
-    </div>
+    </Router>
   );
 }
 
