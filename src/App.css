@@ -1,6 +1,7 @@
 /* App.css */
+
 .container {
-    margin-top: 80px; /* Adjust for fixed navbar */
+    margin-top: 80px; 
   }
   
   .recipes {
@@ -19,4 +20,6 @@
   .searchbar-container {
     margin-top: 10000vh; /* This pushes the search bar down by the height of the viewport */
   }
-    
+
+
+  

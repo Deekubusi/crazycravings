@@ -1,42 +1,74 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Navbar.css'; // Import your custom CSS file
 
-function Navbar() {
-  const [showIngredientsCheckboxes, setShowIngredientsCheckboxes] = useState(false);
+function Navbar({ onApplyFilters }) {
+  const [showCategoriesCheckboxes, setShowCategoriesCheckboxes] = useState(false);
   const [showRatingCheckboxes, setShowRatingCheckboxes] = useState(false);
 
-  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
 
-  const handleIngredientsClick = () => {
-    setShowIngredientsCheckboxes(!showIngredientsCheckboxes);
-    setShowRatingCheckboxes(false); // Optionally hide other checkboxes
+  const handleCategoriesClick = () => {
+    setShowCategoriesCheckboxes(!showCategoriesCheckboxes);
+    setShowRatingCheckboxes(false); // Hide other checkboxes
   };
 
   const handleRatingClick = () => {
     setShowRatingCheckboxes(!showRatingCheckboxes);
-    setShowIngredientsCheckboxes(false); // Optionally hide other checkboxes
+    setShowCategoriesCheckboxes(false); // Hide other checkboxes
   };
 
-  const handleIngredientChange = (ingredient) => {
-    setSelectedIngredients((prevState) =>
-      prevState.includes(ingredient)
-        ? prevState.filter((item) => item !== ingredient)
-        : [...prevState, ingredient]
+  const handleCategoriesChange = (category) => {
+    setSelectedCategories((prevState) =>
+      prevState.includes(category)
+        ? prevState.filter((item) => item !== category)
+        : [...prevState, category]
     );
   };
 
   const handleRatingChange = (rating) => {
-    setSelectedRatings((prevState) =>
-      prevState.includes(rating)
-        ? prevState.filter((item) => item !== rating)
-        : [...prevState, rating]
-    );
+    setSelectedRatings([rating]); // Start fresh with the selected rating
   };
 
+  const backend = "http://13.60.15.198:8000";
+
   const applyFilters = () => {
-    // Here you would apply the selected filters, e.g., by calling an API or updating your UI
-    console.log('Selected Ingredients:', selectedIngredients);
+    console.log('Selected Categories:', selectedCategories);
     console.log('Selected Ratings:', selectedRatings);
+
+    const data = {
+      categories: selectedCategories,
+      rating: selectedRatings.length > 0 ? Math.max(...selectedRatings) : null,
+    };
+
+    console.log('Sending data:', data);
+
+    // Make the API call
+    fetch(`${backend}/filters`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log('Filter response:', result);
+
+        // Close the filters tab
+        const offcanvasElement = document.getElementById('offcanvasNavbar');
+        const offcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasElement);
+        if (offcanvas) {
+          offcanvas.hide();
+        }
+
+        onApplyFilters(result.data);
+
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   };
 
   return (
@@ -46,7 +78,7 @@ function Navbar() {
         <button className="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
-        <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div className="offcanvas offcanvas-end offcanvas-custom" tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
           <div className="offcanvas-header">
             <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Crazy Cravings</h5>
             <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -61,72 +93,140 @@ function Navbar() {
                   <strong>Filters</strong>
                 </a>
                 <ul className="dropdown-menu">
-                  <li><a className="dropdown-item" href="#" onClick={handleIngredientsClick}>Ingredients</a></li>
+                  <li><a className="dropdown-item" href="#" onClick={handleCategoriesClick}>Categories</a></li>
                   <li><a className="dropdown-item" href="#" onClick={handleRatingClick}>Rating</a></li>
                 </ul>
-                {showIngredientsCheckboxes && (
-                  <div className="checkbox-group">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value="onion"
-                        id="ingredient1"
-                        onChange={() => handleIngredientChange('onion')}
-                      />
-                      <label className="form-check-label" htmlFor="ingredient1">Onion</label>
+                <div className={`filter-options ${showCategoriesCheckboxes || showRatingCheckboxes ? 'd-block' : 'd-none'}`}>
+                  {showCategoriesCheckboxes && (
+                    <div className="checkbox-group">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          value="Breakfast"
+                          id="category1"
+                          checked={selectedCategories.includes('Breakfast')}
+                          onChange={() => handleCategoriesChange('Breakfast')}
+                        />
+                        <label className="form-check-label" htmlFor="category1">Breakfast</label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          value="Lunch"
+                          id="category2"
+                          checked={selectedCategories.includes('Lunch')}
+                          onChange={() => handleCategoriesChange('Lunch')}
+                        />
+                        <label className="form-check-label" htmlFor="category2">Lunch</label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          value="Brunch"
+                          id="category3"
+                          checked={selectedCategories.includes('Brunch')}
+                          onChange={() => handleCategoriesChange('Brunch')}
+                        />
+                        <label className="form-check-label" htmlFor="category3">Brunch</label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          value="Dinner"
+                          id="category4"
+                          checked={selectedCategories.includes('Dinner')}
+                          onChange={() => handleCategoriesChange('Dinner')}
+                        />
+                        <label className="form-check-label" htmlFor="category4">Dinner</label>
+                      </div>
                     </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value="tomato"
-                        id="ingredient2"
-                        onChange={() => handleIngredientChange('tomato')}
-                      />
-                      <label className="form-check-label" htmlFor="ingredient2">Tomato</label>
+                  )}
+                  {showRatingCheckboxes && (
+                    <div className="radio-group">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="rating"
+                          value="1"
+                          id="rating1"
+                          checked={selectedRatings.includes('1')}
+                          onChange={() => handleRatingChange('1')}
+                        />
+                        <label className="form-check-label" htmlFor="rating1">
+                          <span className="star">&#9733;</span> and above
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="rating"
+                          value="2"
+                          id="rating2"
+                          checked={selectedRatings.includes('2')}
+                          onChange={() => handleRatingChange('2')}
+                        />
+                        <label className="form-check-label" htmlFor="rating2">
+                          <span className="star">&#9733;&#9733;</span> and above
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="rating"
+                          value="3"
+                          id="rating3"
+                          checked={selectedRatings.includes('3')}
+                          onChange={() => handleRatingChange('3')}
+                        />
+                        <label className="form-check-label" htmlFor="rating3">
+                          <span className="star">&#9733;&#9733;&#9733;</span> and above
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="rating"
+                          value="4"
+                          id="rating4"
+                          checked={selectedRatings.includes('4')}
+                          onChange={() => handleRatingChange('4')}
+                        />
+                        <label className="form-check-label" htmlFor="rating4">
+                          <span className="star">&#9733;&#9733;&#9733;&#9733;</span> and above
+                        </label>
+                      </div>
                     </div>
-                    {/* Add more ingredients as needed */}
-                  </div>
-                )}
-                {showRatingCheckboxes && (
-                  <div className="checkbox-group">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value="1 and above"
-                        id="rating1"
-                        onChange={() => handleRatingChange('1 and above')}
-                      />
-                      <label className="form-check-label" htmlFor="rating1">1 and above</label>
+                  )}
+                  <button className="btn mt-3 btn-custom" onClick={applyFilters}>Apply Filters</button>
+                  {(selectedCategories.length > 0 || selectedRatings.length > 0) && (
+                    <div className="selected-filters mt-3">
+                      <h6>Selected Filters:</h6>
+                      <ul>
+                        {selectedCategories.length > 0 && (
+                          <li><strong>Categories:</strong> {selectedCategories.join(', ')}</li>
+                        )}
+                        {selectedRatings.length > 0 && (
+                          <li><strong>Ratings:</strong> {selectedRatings.join(', ')}</li>
+                        )}
+                      </ul>
                     </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value="2 and above"
-                        id="rating2"
-                        onChange={() => handleRatingChange('2 and above')}
-                      />
-                      <label className="form-check-label" htmlFor="rating2">2 and above</label>
-                    </div>
-                    {/* Add more ratings as needed */}
-                  </div>
-                )}
-                <button className="btn btn-primary mt-3" onClick={applyFilters}>Apply Filters</button>
+                  )}
+                </div>
               </li>
             </ul>
-            <form className="d-flex mt-3" role="search">
-              <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-              <button className="btn btn-outline-success" type="submit">Search</button>
-            </form>
           </div>
         </div>
       </div>
     </nav>
   );
 }
-
 
 export default Navbar;
